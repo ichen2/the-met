@@ -1,5 +1,6 @@
 package com.ichen.themet
 
+import android.util.Log
 import com.ichen.themet.models.Painting
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -15,6 +16,20 @@ class PaintingsRepository {
     suspend fun getPainting(id: Int): Painting? {
         val call = paintingService.getPainting(id)
         return if(call.isSuccessful) call.body() else null
+    }
+
+    suspend fun getAllPaintingIds(): List<Int>? {
+        val ids: MutableSet<Int> = mutableSetOf()
+        var queryCharacter: Char = 'a'
+        while(queryCharacter <= 'z') {
+            val call = paintingService.searchPaintings(query = queryCharacter.toString())
+            Log.d("DEEZ", "Made request to ${call.raw().request.url}")
+            if (call.isSuccessful) {
+                ids.addAll(call.body()?.objectIDs?.map { id -> id.toInt()} ?: listOf())
+            }
+            queryCharacter++
+        }
+        return if(ids.isEmpty()) null else ids.toList()
     }
 
     suspend fun getAllPaintings(): List<Painting>? {
